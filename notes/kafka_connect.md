@@ -177,6 +177,22 @@ offset.storage.file.filename=/tmp/connect.offsets
 | Submit connectors | CLI args at startup | REST API (runtime) |
 | Use case | Dev / testing | Production |
 
+### Installing Confluent Hub Client
+
+`confluent-hub` is not included in Confluent Platform 7.x. It must be installed separately:
+
+```bash
+curl -L -O http://client.hub.confluent.io/confluent-hub-client-latest.tar.gz
+tar -xzf confluent-hub-client-latest.tar.gz
+```
+
+Then move the extracted `bin/confluent-hub` and `share/` contents into `$CONFLUENT_HOME`.
+
+After that, install connectors:
+```bash
+confluent-hub install confluentinc/kafka-connect-jdbc:latest
+```
+
 ---
 
 ## 4. JDBC Connectors
