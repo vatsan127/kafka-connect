@@ -24,19 +24,19 @@
        │ Source                              Sink    │
        │ Connector                        Connector  │
        ▼                                             │
-┌──────────────────────────────────────────────────────────────┐
-│                      KAFKA CONNECT                           │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐          │
-│  │   Worker    │  │   Worker    │  │   Worker    │          │
-│  │  (Tasks)    │  │  (Tasks)    │  │  (Tasks)    │          │
-│  └─────────────┘  └─────────────┘  └─────────────┘          │
-└──────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────┐
+│                       KAFKA CONNECT                        │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
+│  │   Worker    │  │   Worker    │  │   Worker    │        │
+│  │  (Tasks)    │  │  (Tasks)    │  │  (Tasks)    │        │
+│  └─────────────┘  └─────────────┘  └─────────────┘        │
+└────────────────────────────────────────────────────────────┘
                            │
                            ▼
-┌──────────────────────────────────────────────────────────────┐
-│                      KAFKA CLUSTER                           │
-│         Topics: data, connect-offsets, connect-configs       │
-└──────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────┐
+│                       KAFKA CLUSTER                        │
+│       Topics: data, connect-offsets, connect-configs       │
+└────────────────────────────────────────────────────────────┘
 ```
 
 ### Why Kafka Connect?
@@ -110,27 +110,27 @@ There are two deployment modes:
 **What Lives Inside a Worker:**
 
 ```
-┌──────────────────────────────────────────────────┐
-│                    WORKER                         │
-│                                                   │
-│  ┌─────────────────────────────────────────────┐  │
-│  │  Connector Instance                         │  │
-│  │  - Validates config                         │  │
-│  │  - Generates task configs                   │  │
-│  │  - Monitors task health                     │  │
-│  └─────────────────────────────────────────────┘  │
-│                                                   │
-│  ┌──────────────┐  ┌──────────────┐               │
-│  │   Task 0     │  │   Task 1     │  ...          │
-│  │  (thread)    │  │  (thread)    │               │
-│  └──────────────┘  └──────────────┘               │
-│                                                   │
-│  ┌─────────────────────────────────────────────┐  │
-│  │  Converter (key + value)                    │  │
-│  │  REST API Handler (:8083)                   │  │
-│  │  Offset Manager                             │  │
-│  └─────────────────────────────────────────────┘  │
-└──────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────┐
+│                       WORKER                       │
+│                                                    │
+│  ┌──────────────────────────────────────────────┐  │
+│  │  Connector Instance                          │  │
+│  │  - Validates config                          │  │
+│  │  - Generates task configs                    │  │
+│  │  - Monitors task health                      │  │
+│  └──────────────────────────────────────────────┘  │
+│                                                    │
+│  ┌──────────────┐  ┌──────────────┐                │
+│  │   Task 0     │  │   Task 1     │  ...           │
+│  │  (thread)    │  │  (thread)    │                │
+│  └──────────────┘  └──────────────┘                │
+│                                                    │
+│  ┌──────────────────────────────────────────────┐  │
+│  │  Converter (key + value)                     │  │
+│  │  REST API Handler (:8083)                    │  │
+│  │  Offset Manager                              │  │
+│  └──────────────────────────────────────────────┘  │
+└────────────────────────────────────────────────────┘
 ```
 
 - **One connector instance** per connector config — it doesn't move data itself
@@ -166,30 +166,10 @@ value.converter=org.apache.kafka.connect.json.JsonConverter
 offset.storage.file.filename=/tmp/connect.offsets
 ```
 
-**Distributed Mode Configuration** (`connect-distributed.properties`):
-```properties
-bootstrap.servers=localhost:9092
-group.id=connect-cluster
-
-key.converter=io.confluent.connect.avro.AvroConverter
-value.converter=io.confluent.connect.avro.AvroConverter
-key.converter.schema.registry.url=http://localhost:8081
-value.converter.schema.registry.url=http://localhost:8081
-
-# Internal topics for storing connector state
-config.storage.topic=connect-configs
-offset.storage.topic=connect-offsets
-status.storage.topic=connect-status
-
-config.storage.replication.factor=1
-offset.storage.replication.factor=1
-status.storage.replication.factor=1
-```
-
 **Standalone vs Distributed:**
 
 | Feature | Standalone | Distributed |
-|---------|-----------|-------------|
+| --- | --- | --- |
 | Workers | Single process | Multiple processes (cluster) |
 | Offset storage | Local file | Kafka topic (`connect-offsets`) |
 | Config storage | `.properties` files | Kafka topic (`connect-configs`) |
@@ -209,8 +189,9 @@ status.storage.replication.factor=1
 - Tables become topics
 
 **Modes:**
+
 | Mode | Description |
-|------|-------------|
+| --- | --- |
 | `bulk` | Load entire table each time |
 | `incrementing` | Track new rows by incrementing column (id) |
 | `timestamp` | Track new/updated rows by timestamp column |
@@ -230,9 +211,10 @@ poll.interval.ms=5000
 ```
 
 **Key Parameters:**
+
 | Parameter | Description |
-|-----------|-------------|
-| `mode` | `bulk` \| `incrementing` \| `timestamp` \| `timestamp+incrementing` |
+| --- | --- |
+| `mode` | `bulk`, `incrementing`, `timestamp`, `timestamp+incrementing` |
 | `incrementing.column.name` | Column to track new rows |
 | `timestamp.column.name` | Column to track updates |
 | `topic.prefix` | Prefix for created topics |
@@ -247,8 +229,9 @@ poll.interval.ms=5000
 - Supports insert and upsert modes
 
 **Insert Modes:**
+
 | Mode | Description |
-|------|-------------|
+| --- | --- |
 | `insert` | Simple INSERT statements |
 | `upsert` | INSERT with ON CONFLICT UPDATE (or equivalent) |
 | `update` | Only UPDATE existing rows |
@@ -269,12 +252,13 @@ batch.size=3000
 ```
 
 **Key Parameters:**
+
 | Parameter | Description |
-|-----------|-------------|
+| --- | --- |
 | `auto.create` | Auto-create tables if not exists |
 | `auto.evolve` | Auto-add columns for new fields |
-| `insert.mode` | `insert` \| `upsert` \| `update` |
-| `pk.mode` | `record_key` \| `record_value` \| `kafka` |
+| `insert.mode` | `insert`, `upsert`, `update` |
+| `pk.mode` | `record_key`, `record_value`, `kafka` |
 | `pk.fields` | Primary key field names |
 | `batch.size` | Number of records per batch |
 
@@ -301,7 +285,7 @@ batch.size=3000
 ### Error Handling Configuration
 
 | Property | Values | Description |
-|----------|--------|-------------|
+| --- | --- | --- |
 | `errors.tolerance` | `none` (default), `all` | `none` = fail on first error, `all` = skip bad records |
 | `errors.log.enable` | `true`, `false` | Log errors |
 | `errors.log.include.messages` | `true`, `false` | Include failed message in log |
@@ -338,89 +322,7 @@ batch.size=3000
 
 ---
 
-## 6. Converters & Serialization
-
-Converters control HOW data is serialized when written to Kafka and deserialized when read from Kafka.
-
-### Data Flow
-
-```
-Source: DB -> JDBC Connector -> ConnectRecord -> CONVERTER -> Kafka (bytes)
-Sink:  Kafka (bytes) -> CONVERTER -> ConnectRecord -> JDBC Connector -> DB
-```
-
-### Built-in Converters
-
-**JsonConverter** (`org.apache.kafka.connect.json.JsonConverter`):
-- `schemas.enable=true` -> schema + data in every message (bloated)
-- `schemas.enable=false` -> just data, no schema (compact but fragile)
-
-With schema:
-```json
-{"schema":{"type":"struct","fields":[...]},"payload":{"id":1,"name":"Alice"}}
-```
-
-Without schema:
-```json
-{"id":1,"name":"Alice"}
-```
-
-**StringConverter:**
-- Plain string, no schema. Useful for keys.
-
-**AvroConverter** (`io.confluent.connect.avro.AvroConverter`):
-- Compact binary format + schema evolution
-- REQUIRES Schema Registry
-- Recommended for production
-
-### Converter Configuration
-
-**Worker level** (applies to all connectors):
-```properties
-key.converter=org.apache.kafka.connect.storage.StringConverter
-value.converter=io.confluent.connect.avro.AvroConverter
-value.converter.schema.registry.url=http://schema-registry:8081
-```
-
-**Per-connector override:**
-```json
-{
-    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
-    "value.converter.schemas.enable": "false"
-}
-```
-
----
-
-## 7. Schema Registry
-
-Central store for schemas. Converters (Avro/Protobuf/JsonSchema) use it.
-
-### Why?
-- **Without:** producer changes format -> consumer breaks
-- **With:** schemas validated, evolution rules enforced, compact messages
-
-### How it Works
-1. Converter registers schema in registry, gets schema ID
-2. Message on Kafka: `[magic byte][schema ID 4 bytes][binary data]`
-3. Consumer fetches schema by ID from registry, deserializes data
-
-### Compatibility Modes
-
-| Mode | Description |
-|------|-------------|
-| `BACKWARD` (default) | New schema can read old data (add optional, remove fields) |
-| `FORWARD` | Old schema can read new data (remove optional, add fields) |
-| `FULL` | Both directions (add/remove optional fields only) |
-| `NONE` | No checks |
-
-### Subject Naming
-- Default: `{topic}-key` and `{topic}-value`
-- Example: topic `orders` -> `orders-key`, `orders-value`
-
----
-
-## 8. Transforms (Single Message Transforms)
+## 6. Transforms (Single Message Transforms)
 
 Modify records one at a time as they flow through Connect.
 
@@ -481,7 +383,7 @@ Sink:  Kafka -> Converter -> [Transforms] -> Connector -> DB
 
 ---
 
-## 9. Connector Internals
+## 7. Connector Internals
 
 ### Lifecycle
 1. Submit connector config (REST API or properties file)
