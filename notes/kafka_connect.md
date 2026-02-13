@@ -184,9 +184,9 @@ offset.storage.file.filename=/tmp/connect.offsets
 ```bash
 curl -L -O http://client.hub.confluent.io/confluent-hub-client-latest.tar.gz
 tar -xzf confluent-hub-client-latest.tar.gz
+cp -r bin/confluent-hub $CONFLUENT_HOME/bin/
+cp -r share/* $CONFLUENT_HOME/share/
 ```
-
-Then move the extracted `bin/confluent-hub` and `share/` contents into `$CONFLUENT_HOME`.
 
 After that, install connectors:
 ```bash
